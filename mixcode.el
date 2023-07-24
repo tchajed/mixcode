@@ -20,9 +20,11 @@ separated by new lines."
 		(add-to-list 'keywords `(,matcher 0 ,face t))))
 	keywords))
 
+(defvar mixcode-source-dir nil)
+
 (defun mixcode (fname)
   (interactive
-   (list (read-file-name "Source file: ")))
+   (list (read-file-name "Source file: " mixcode-source-dir)))
   (let* ((strings (file-to-nlsep-strings fname))
 		 (keywords (nlsep-strings-keywords strings)))
 	(font-lock-add-keywords nil keywords)
