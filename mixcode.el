@@ -15,6 +15,12 @@
 	(let ((vbar (propertize "┃" 'face 'font-lock-comment-face)))
 	  (format "%s %s" vbar (buffer-string)))))
 
+(defun mixcode-fontify-begin-line ()
+  (propertize (format "┏%s" (make-string 71 ?━)) 'face 'font-lock-comment-face))
+
+(defun mixcode-fontify-end-line ()
+  (propertize (format "┗%s" (make-string 71 ?━)) 'face 'font-lock-comment-face))
+
 (defun mixcode-fontify-buffer ()
   (let ((keywords '(("(\\*@[[:blank:]]\\(.*\\)[[:blank:]]@\\*)"
 					 0
@@ -25,6 +31,20 @@
 					   ;; (i.e., inside comment notation)
 					   ,(mixcode-fontify-source-string (match-string 1)))
 					 ;; set `override' to override major mode fontification
+					 t)
+					(".*mixcode-begin.*"
+					 0
+					 `(face
+					   nil
+					   display
+					   ,(mixcode-fontify-begin-line))
+					 t)
+					(".*mixcode-end.*"
+					 0
+					 `(face
+					   nil
+					   display
+					   ,(mixcode-fontify-end-line))
 					 t))))
 	;; TODO: set `'font-lock-extra-managed-props' for resetting fontification
 	(font-lock-add-keywords nil keywords)
@@ -46,6 +66,12 @@
        ranges)
       (setq start (match-end 0)))
     (nreverse (seq-mapcat 'nreverse ranges))))
+
+(defun mixcode-insert-begin ()
+  (insert "(\*@@@@@@@@@@@@@@mixcode-begin@@@@@@@@@@@@@@\*)\n"))
+
+(defun mixcode-insert-end ()
+  (insert "(\*@@@@@@@@@@@@@@@mixcode-end@@@@@@@@@@@@@@@\*)\n"))
 
 (defun mixcode-insert-lines (lines)
   (dolist (line lines nil)
@@ -69,7 +95,9 @@
 		   (completing-read "Function name: " mixcode-source-functbl))))
   (let ((range (gethash str mixcode-source-functbl)))
 	(unless range (error "Unknown function name."))
-	(mixcode-insert-lines (number-sequence (car range) (cdr range)))))
+	(mixcode-insert-begin)
+	(mixcode-insert-lines (number-sequence (car range) (cdr range)))
+	(mixcode-insert-end)))
 
 ;;; Load and process source file
 
@@ -108,3 +136,8 @@
   "Mixing Go code within Coq proof."
   :lighter " mixcode"
   (mixcode-fontify-buffer))
+
+;; TODOs
+;; 1. Struct
+;; 2. wp and representation predicate generation
+;; 3. Comments above
