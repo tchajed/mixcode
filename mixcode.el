@@ -32,7 +32,6 @@
 
 ;;; Comment generation
 
-
 ;; (adapted from https://stackoverflow.com/a/44908362)
 (defun mixcode-parse-line-numbers (str)
   "Parse string STR representing a range of integers into a list of integers."
@@ -67,8 +66,7 @@
   (interactive
    (list (progn
 		   (unless mixcode-source-strs (error "Run `mixcode-load-file' first."))
-		   (read-string "Function name: "))))
-  (princ mixcode-source-functbl)
+		   (completing-read "Function name: " mixcode-source-functbl))))
   (let ((range (gethash str mixcode-source-functbl)))
 	(unless range (error "Unknown function name."))
 	(mixcode-insert-lines (number-sequence (car range) (cdr range)))))
