@@ -104,8 +104,8 @@
 (defun mixcode-build-functbl ()
   (goto-char (point-min))
   (let ((tbl (make-hash-table :test 'equal)))
-	(while (search-forward-regexp "^func \\(.*\\)(\\(.*\\))" nil t)
-	  (let ((func (match-string 1))
+	(while (search-forward-regexp "^func .*(.*)\\|^type .* struct" nil t)
+	  (let ((func (match-string 0))
 			(begin  (line-number-at-pos)))
 		(when (search-forward-regexp "^}" nil t)
 		  (puthash func (cons begin (line-number-at-pos)) tbl))))
@@ -138,6 +138,5 @@
   (mixcode-fontify-buffer))
 
 ;; TODOs
-;; 1. Struct
-;; 2. wp and representation predicate generation
-;; 3. Comments above
+;; 1. wp and representation predicate generation
+;; 2. Comments above
