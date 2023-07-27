@@ -104,12 +104,17 @@
 	  (mixcode-insert-end)
 	  (indent-region begin (point)))))
 
+(defun mixcode-is-func (key value)
+  (string-match "^func" key))
+
 (defun mixcode-insert-wp (sig)
   "Insert wp theorem."
   (interactive
    (list (progn
 		   (unless mixcode-source-strs (error "Run `mixcode-load-file' first."))
-		   (completing-read "Function name: " mixcode-source-tbl))))
+		   (completing-read "Function name: "
+							mixcode-source-tbl
+							'mixcode-is-func))))
   (let ((range (gethash sig mixcode-source-tbl)))
 	(unless range (error "Unknown function name."))
 	(mixcode-insert-theorem sig)
@@ -132,9 +137,13 @@
 		  (puthash func (cons begin (line-number-at-pos)) tbl))))
 	tbl))
 
-(defun mixcode-build-strs-tbl (fname)
+(defun mixcode-build-strs (fname)
   (let ((built (with-temp-buffer
 				 (insert-file-contents fname)
+				 (goto-char (point-min))
+				 ;; replace tab with 4 spaces
+				 (while (search-forward "\t" nil t)
+				   (replace-match "    " nil t))
 				 (cons
 				  (split-string (buffer-string) "\n")
 				  (mixcode-build-tbl)))))
@@ -150,7 +159,7 @@
 (defun mixcode-load-file (fname)
   (interactive
    (list (mixcode-read-source-file)))
-  (mixcode-build-strs-tbl fname))
+  (mixcode-build-strs fname))
 
 (define-minor-mode
   mixcode-mode
