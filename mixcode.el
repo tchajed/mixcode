@@ -13,7 +13,7 @@
 	(go-mode)
 	(font-lock-fontify-buffer)
 	(let ((vbar (propertize "┃" 'face 'font-lock-comment-face)))
-	  (format "%s %s" vbar (buffer-string)))))
+	  (format "%s %s" vbar (string-trim (buffer-string) "" " *")))))
 
 (defun mixcode-fontify-begin-line ()
   (propertize (format "┏%s" (make-string 71 ?━)) 'face 'font-lock-comment-face))
@@ -68,10 +68,12 @@
     (nreverse (seq-mapcat 'nreverse ranges))))
 
 (defun mixcode-insert-begin ()
-  (insert "(\*@@@@@@@@@@@@@@mixcode-begin@@@@@@@@@@@@@@\*)\n"))
+  (let ((pad (make-string 31 ?@)))
+	(insert (format "(\*%smixcode-begin%s\*)\n" pad pad))))
 
 (defun mixcode-insert-end ()
-  (insert "(\*@@@@@@@@@@@@@@@mixcode-end@@@@@@@@@@@@@@@\*)\n"))
+  (let ((pad (make-string 32 ?@)))
+	(insert (format "(\*%smixcode-end%s\*)\n" pad pad))))
 
 (defun mixcode-insert-qed ()
   (insert "Qed.\n"))
@@ -79,7 +81,7 @@
 (defun mixcode-insert-lines (lines)
   (dolist (line lines nil)
 	(let ((str (nth (1- line) mixcode-source-strs)))
-	  (when str (insert (format "(\*@ %s @\*)\n" str))))))
+	  (when str (insert (format "(\*@ %-71s @\*)\n" str))))))
 
 (defun mixcode-insert-code-with-numbers (str)
   "Insert commented code based on line numbers STR."
