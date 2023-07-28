@@ -1,20 +1,22 @@
-# Mixcode
+# Mixcode: mixing code in your proof
 
-Mixing code in your proof. Features:
+Features:
 
-1. prettifying commented blocks of code,
-2. generating commented blocks of code for functions and struct,
-3. generating a WP thoerem statement for functions.
+* prettifying commented blocks of code
+* generating commented blocks of code for functions and structs
+* generating an initial WP thoerem statement for functions
 
 Support for code in [Go](https://go.dev/), proof in [Perennial](https://github.com/mit-pdos/perennial) + [Iris](https://github.com/mit-pdos/perennial) + [Coq](https://coq.inria.fr/).
 
-![Example](https://www.dropbox.com/s/pcfvtv2u2r0lssg/mixproof.png?dl=0)
+Below is an example automatically generated with mixcode.
+
+![Example](https://www.dropbox.com/s/pcfvtv2u2r0lssg/mixproof.png?dl=1)
 
 ## Setup
 
 Download `mixcode.el`.
 
-Enable it manually by the following Emacs commands (using <kbd>M-x</kbd>):
+To enable it manually, run the following commands in Emacs (using <kbd>M-x</kbd>):
 ```elisp
 (load /path/to/mixcode.el)
 (mixcode-mode)
@@ -38,24 +40,24 @@ To enable it automatically in Coq mode, add the following to your `.emacs`:
 
 `M-x mixcode-insert-code RET func/struct-name`
 
-Remember to use `TAB` to see what's loaded and to auto-complete!
-
-It can also generate commented block of code based on line numbers:
-
-`M-x mixcode-insert-code-with-numbers RET line-numbers`
-
 ### Generating WP theorem statement (incl. commented block of code)
 
 `M-x mixcode-insert-wp RET funcname`
 
+Remember to use `TAB` to see what's loaded and to auto-complete!
+
+### Generating commented block of code for line numbers
+
+`M-x mixcode-insert-code-with-numbers RET line-numbers`
+
 ## Known issues
 
-1. WP generation fails for higher-order function
-2. Function signature parsing won't work for multiple lines
+* WP generation fails for higher-order function
+* Function signature parsing won't work for multiple lines
 
 ## Features wanted
 
-1. Generating representation predicates based on struct definition
-2. Including comments for function and struct
-3. Diffing (comparing commented code with some Go source)
-4. Backward syncing (updating commented code and reflecting changes in real code)
+* Generating representation predicates based on struct definition
+* Including comments for function and struct
+* Diffing (comparing commented code with some Go source)
+* Backward syncing (updating commented code and reflecting changes in real code)
