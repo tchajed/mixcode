@@ -8,9 +8,9 @@ Features:
 
 Support for code in [Go](https://go.dev/), proof in [Perennial](https://github.com/mit-pdos/perennial) + [Iris](https://github.com/mit-pdos/perennial) + [Coq](https://coq.inria.fr/).
 
-Below is an example automatically generated with mixcode.
+Below is an example automatically generated with mixcode:
 
-![Example](https://www.dropbox.com/s/pcfvtv2u2r0lssg/mixproof.png?dl=1)
+<img width="650" alt="mixproof" src="https://github.com/yunshengtw/mixcode/assets/29350735/0f33e813-5b5f-439c-86ee-272676693a43">
 
 ## Setup
 
@@ -38,11 +38,11 @@ To enable it automatically in Coq mode, add the following to your `.emacs`:
 
 ### Generating commented block of code for function/struct
 
-`M-x mixcode-insert-code RET func/struct-name`
+`M-x mixcode-insert-code RET func/struct`
 
 ### Generating WP theorem statement (incl. commented block of code)
 
-`M-x mixcode-insert-wp RET funcname`
+`M-x mixcode-insert-wp RET func`
 
 Remember to use `TAB` to see what's loaded and to auto-complete!
 
