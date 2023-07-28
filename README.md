@@ -6,7 +6,7 @@ Features:
 * generating commented blocks of code for functions and structs
 * generating an initial WP thoerem statement for functions
 
-Support for code in [Go](https://go.dev/), proof in [Perennial](https://github.com/mit-pdos/perennial) + [Iris](https://github.com/mit-pdos/perennial) + [Coq](https://coq.inria.fr/).
+Support for code in [Go](https://go.dev/), proof in [Perennial](https://github.com/mit-pdos/perennial) + [Iris](https://iris-project.org/) + [Coq](https://coq.inria.fr/).
 
 Below is an example automatically generated with mixcode:
 
