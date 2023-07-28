@@ -12,39 +12,74 @@
 	(insert str)
 	(go-mode)
 	(font-lock-fontify-buffer)
-	(let ((vbar (propertize "┃" 'face 'font-lock-comment-face)))
-	  (format "%s %s" vbar (string-trim (buffer-string) "" " *")))))
+	(buffer-string)))
 
-(defun mixcode-fontify-begin-line ()
-  (propertize (format "┏%s" (make-string 71 ?━)) 'face 'font-lock-comment-face))
+(defun mixcode-fontify-body (body)
+  (let ((vbar (propertize "┃" 'face 'font-lock-comment-face)))
+	(format "%s %s"
+			vbar
+			(mixcode-fontify-source-string (string-trim body "" " *")))))
+
+(defun mixcode-fontify-boundary (str)
+  (propertize str 'face 'font-lock-comment-face))
+
+(defun mixcode-fontify-header (header)
+  (let* (;; 2 spaces at front, 1 ┏, 2 spaces around `header'
+		 (width (- fill-column 2 1 2))
+		 (lenheader  (length header))
+		 (lenprefix  (/ (- width lenheader) 2))
+		 (lenpostfix (- width lenprefix lenheader))
+		 (prefix  (mixcode-fontify-boundary (concat "┏" (make-string lenprefix ?━))))
+		 (postfix (mixcode-fontify-boundary (make-string lenpostfix ?━))))
+	(format "%s %s %s"
+			prefix
+			(mixcode-fontify-source-string header)
+			postfix)))
+
+(defun mixcode-fontify-empty-line ()
+  (propertize (format "┖%s" (make-string (- fill-column 2 1) ?╌)) 'face 'font-lock-comment-face))
 
 (defun mixcode-fontify-end-line ()
-  (propertize (format "┗%s" (make-string 71 ?━)) 'face 'font-lock-comment-face))
+  (propertize (format "┗%s" (make-string (- fill-column 2 1) ?━)) 'face 'font-lock-comment-face))
 
 (defun mixcode-fontify-buffer ()
-  (let ((keywords '(("(\\*@[[:blank:]]\\(.*\\)[[:blank:]]@\\*)"
+  (let ((keywords '(("(\\*@     \\(.*\\) @\\*)"
 					 0
 					 `(face
 					   nil
 					   display
 					   ;; fontify the first match subexpression
 					   ;; (i.e., inside comment notation)
-					   ,(mixcode-fontify-source-string (match-string 1)))
+					   ,(mixcode-fontify-body (match-string 1)))
 					 ;; set `override' to override major mode fontification
 					 t)
-					("(.*mixcode-begin.*)"
+					("(\\*@ \\(func .*\\) { +@\\*)"
 					 0
 					 `(face
 					   nil
 					   display
-					   ,(mixcode-fontify-begin-line))
+					   ,(mixcode-fontify-header (match-string 1)))
 					 t)
-					("(.*mixcode-end.*)"
+					("(\\*@ \\(type .*\\) { +@\\*)"
+					 0
+					 `(face
+					   nil
+					   display
+					   ,(mixcode-fontify-header (match-string 1)))
+					 t)
+					("(\\*@ } +@\\*)"
 					 0
 					 `(face
 					   nil
 					   display
 					   ,(mixcode-fontify-end-line))
+					 t)
+					("(\\*@ +@\\*)"
+					 0
+					 `(face
+					   nil
+					   display
+					   ,(mixcode-fontify-empty-line))
 					 t))))
 	;; TODO: set `'font-lock-extra-managed-props' for resetting fontification
 	(font-lock-add-keywords nil keywords)
@@ -66,14 +101,6 @@
        ranges)
       (setq start (match-end 0)))
     (nreverse (seq-mapcat 'nreverse ranges))))
-
-(defun mixcode-insert-begin ()
-  (let ((pad (make-string 31 ?@)))
-	(insert (format "(\*%smixcode-begin%s\*)\n" pad pad))))
-
-(defun mixcode-insert-end ()
-  (let ((pad (make-string 32 ?@)))
-	(insert (format "(\*%smixcode-end%s\*)\n" pad pad))))
 
 (defun mixcode-insert-qed ()
   (insert "Qed.\n"))
@@ -101,9 +128,7 @@
   (let ((range (gethash sig mixcode-source-tbl)))
 	(unless range (error "Unknown function name."))
 	(let ((begin (point)))
-	  (mixcode-insert-begin)
 	  (mixcode-insert-lines (number-sequence (car range) (cdr range)))
-	  (mixcode-insert-end)
 	  (indent-region begin (point)))))
 
 (defun mixcode-is-func (key value)
@@ -121,9 +146,7 @@
 	(unless range (error "Unknown function name."))
 	(mixcode-insert-theorem sig)
 	(let ((begin (point)))
-	  (mixcode-insert-begin)
 	  (mixcode-insert-lines (number-sequence (car range) (cdr range)))
-	  (mixcode-insert-end)
 	  (indent-region begin (point)))
 	(mixcode-insert-qed)))
 
