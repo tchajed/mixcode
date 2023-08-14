@@ -110,6 +110,10 @@
 	(let ((str (nth (1- line) mixcode-source-strs)))
 	  (when str (insert (format "(\*@ %-71s @\*)\n" str))))))
 
+(defun mixcode-insert-sep ()
+  (interactive)
+  (insert (format "(\*@ %s @\*)" (make-string 71 ? ))))
+
 (defun mixcode-insert-code-with-numbers (str)
   "Insert commented code based on line numbers STR."
   (interactive
@@ -172,8 +176,8 @@
 				 (cons
 				  (split-string (buffer-string) "\n")
 				  (mixcode-build-tbl)))))
-	(setq-local mixcode-source-strs (car built))
-	(setq-local mixcode-source-tbl (cdr built))))
+	(setq mixcode-source-strs (car built))
+	(setq mixcode-source-tbl (cdr built))))
 
 (defun mixcode-read-source-file ()
   (read-file-name "Source file: "
