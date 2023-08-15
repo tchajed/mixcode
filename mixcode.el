@@ -107,7 +107,7 @@
 
 (defun mixcode-insert-lines (lines)
   (dolist (line lines nil)
-	(let ((str (nth (1- line) mixcode-source-strs)))
+	(let ((str (mixcode-source-str-at line)))
 	  (when str (insert (format "(\*@ %-71s @\*)\n" str))))))
 
 (defun mixcode-insert-sep ()
@@ -159,7 +159,7 @@
 (defun mixcode-build-tbl ()
   (goto-char (point-min))
   (let ((tbl (make-hash-table :test 'equal)))
-	(while (search-forward-regexp "\\(^func .*\\|^type .*\\) {" nil t)
+	(while (search-forward-regexp "\\(^func .*\\|^type .* struct\\) {" nil t)
 	  (let ((func  (string-trim (match-string 1)))
 			(begin (line-number-at-pos)))
 		(when (search-forward-regexp "^}" nil t)
@@ -307,3 +307,81 @@
 ;; (defconst f3 "func MkTuple() *Tuple")
 ;; (defconst f4 "func findVersion(tid uint64, vers []Version) Version")
 ;; (mixcode-parse-signature f2)
+
+;; Generation of representation predicates based on struct definition
+
+(defun mixcode-is-struct (key value)
+  (string-match "^type .* struct" key))
+
+(defun mixcode-insert-rp (name)
+  "Insert representation predicate."
+  (interactive
+   (list (progn
+		   (unless mixcode-source-strs (error "Run `mixcode-load-file' first."))
+		   (completing-read "Struct name: "
+							mixcode-source-tbl
+							'mixcode-is-struct))))
+  (let ((range (gethash name mixcode-source-tbl)))
+	(unless range (error "Unknown struct name."))
+	(let ((begin (point)))
+	  (mixcode-insert-lines (number-sequence (car range) (cdr range)))
+	  (mixcode-insert-rp-def (number-sequence (car range) (1- (cdr range))))
+	  (indent-region begin (point)))))
+
+(defun mixcode-parse-field (str)
+  (string-match "\\([^[:blank:]]*\\)[[:blank:]]+\\([^[:blank:]]*\\)" str)
+  (cons (match-string 1 str) (match-string 2 str)))
+
+(defun mixcode-parse-struct-name (str)
+  (string-match "^type[[:blank:]]+\\([^[:blank:]]+\\)[[:blank:]]+struct" str)
+  (match-string 1 str))
+
+(defun mixcode-insert-rp-header (name)
+  (insert
+   (format "Definition own_%s (%s : loc) : iProp Σ :=\n"
+		   (downcase name) (downcase name))))
+
+(defun mixcode-insert-rp-exists (fields)
+  (insert (format "∃%s,\n" (mixcode-type-vars fields))))
+
+(defun mixcode-insert-rp-resources (name fields)
+  (while fields
+	(let ((field (car fields)))
+	  (insert (format
+			 "\"H%s\" ∷ %s ↦[%s :: \"%s\"]%s"
+			 (car field)
+			 (downcase name)
+			 name
+			 (car field)
+			 (mixcode-toval-var field))))
+	(setq fields (cdr fields))
+	;; insert sep and newline if there are more resources
+	(when fields
+	  (insert " ∗\n")))
+  (insert "."))
+
+;; TODO:
+;; 1. insert known resources such as mutexes, slices, maps
+;; 2. insert mu to is_struct
+;; 3. annotate read-only
+
+(defun mixcode-insert-rp-def (lines)
+  ;; first line is struct names, remainings are fields
+  (let* ((name (mixcode-parse-struct-name (mixcode-source-str-at (car lines))))
+		 (fields (mixcode-parse-fields name (cdr lines))))
+	(mixcode-insert-rp-header name)
+	(mixcode-insert-rp-exists fields)
+	(mixcode-insert-rp-resources name fields)
+	(print name)
+	(print fields)))
+
+(defun mixcode-parse-fields (name lines)
+  (let ((fields))
+	(dolist (line lines fields)
+	  (let ((str (string-trim (mixcode-source-str-at line))))
+		;; ignore empty and comment lines
+		(unless (or (equal "" str) (string-match "^\/\/.*" str))
+		  (add-to-list 'fields (mixcode-parse-field str) t))))))
+
+(defun mixcode-source-str-at (n)
+  (nth (1- n) mixcode-source-strs))
