@@ -36,6 +36,19 @@
 			(mixcode-fontify-source-string header)
 			postfix)))
 
+(defun mixcode-fontify-res-sep (res)
+  (let* (;; 4 spaces at front, 1 ┏,1 , 2 spaces around `res'
+		 (width (- fill-column 4 1 1 2))
+		 (lenres     (length res))
+		 (lenprefix  (/ (- width lenres) 2))
+		 (lenpostfix (- width lenprefix lenres))
+		 (prefix  (mixcode-fontify-boundary (concat "─" (make-string lenprefix ?─))))
+		 (postfix (mixcode-fontify-boundary (concat (make-string lenpostfix ?─) "─"))))
+	(format "%s %s %s"
+			prefix
+			(mixcode-fontify-source-string res)
+			postfix)))
+
 (defun mixcode-fontify-empty-line ()
   (propertize (format "┖%s" (make-string (- fill-column 2 1) ?╌)) 'face 'font-lock-comment-face))
 
@@ -73,6 +86,13 @@
 					   nil
 					   display
 					   ,(mixcode-fontify-end-line))
+					 t)
+					("(\\*@ Res: \\(.*\\) @\\*)"
+					 0
+					 `(face
+					   nil
+					   display
+					   ,(mixcode-fontify-res-sep (string-trim (match-string 1))))
 					 t)
 					("(\\*@ +@\\*)"
 					 0
@@ -113,6 +133,10 @@
 (defun mixcode-insert-sep ()
   (interactive)
   (insert (format "(\*@ %s @\*)" (make-string 71 ? ))))
+
+(defun mixcode-insert-res-sep (str)
+  (interactive "sResources about: ")
+  (insert (format "(\*@ Res: %-66s @\*)" str)))
 
 (defun mixcode-insert-code-with-numbers (str)
   "Insert commented code based on line numbers STR."
