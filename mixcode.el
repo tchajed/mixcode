@@ -210,6 +210,7 @@
 				  mixcode-source-file))
 
 (defun mixcode-load-file (fname)
+  "Load a Go file to mix with."
   (interactive
    (list (mixcode-read-source-file)))
   (mixcode-build-strs fname))
